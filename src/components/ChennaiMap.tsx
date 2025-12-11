@@ -30,11 +30,11 @@ const ChennaiMap = ({ markers, onMarkerClick, className }: ChennaiMapProps) => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
     // Initialize map centered on Chennai
-    mapInstanceRef.current = L.map(mapRef.current).setView([13.0827, 80.2707], 11);
+    mapInstanceRef.current = L.map(mapRef.current, {
+      attributionControl: false
+    }).setView([13.0827, 80.2707], 11);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(mapInstanceRef.current);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstanceRef.current);
 
     markersLayerRef.current = L.layerGroup().addTo(mapInstanceRef.current);
 
@@ -116,7 +116,7 @@ const ChennaiMap = ({ markers, onMarkerClick, className }: ChennaiMapProps) => {
           ` : ''}
           ${marker.prediction ? `
             <p style="margin: 4px 0; font-size: 12px; color: #666;">
-              <strong>10 min prediction:</strong> ${marker.prediction}
+              <strong>30 min prediction:</strong> ${marker.prediction}
             </p>
           ` : ''}
           ${marker.reason ? `
