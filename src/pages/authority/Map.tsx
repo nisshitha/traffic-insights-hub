@@ -31,7 +31,7 @@ const AuthorityMap = () => {
         .select(`
           id,
           congestion_level,
-          prediction_10min,
+          prediction_30min,
           current_speed,
           vehicle_density,
           reason,
@@ -51,10 +51,10 @@ const AuthorityMap = () => {
               lng: Number(area.longitude),
               name: area.name,
               congestionLevel: item.congestion_level,
-              isHotspot: item.prediction_10min === 'high' && item.congestion_level !== 'high',
+              isHotspot: item.prediction_30min === 'high' && item.congestion_level !== 'high',
               speed: item.current_speed,
               density: item.vehicle_density,
-              prediction: item.prediction_10min,
+              prediction: item.prediction_30min,
               reason: item.reason
             });
           }
@@ -196,7 +196,7 @@ const AuthorityMap = () => {
                     )}
                     {selectedMarker.prediction && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">10 min:</span>
+                        <span className="text-muted-foreground">30 min:</span>
                         <span className="capitalize">{selectedMarker.prediction}</span>
                       </div>
                     )}

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 interface CongestionData {
   id: string;
   congestion_level: 'low' | 'medium' | 'high';
-  prediction_10min: 'low' | 'medium' | 'high' | null;
+  prediction_30min: 'low' | 'medium' | 'high' | null;
   current_speed: number | null;
   vehicle_density: number | null;
   reason: string | null;
@@ -28,7 +28,7 @@ const CitizenCongestion = () => {
       .select(`
         id,
         congestion_level,
-        prediction_10min,
+        prediction_30min,
         current_speed,
         vehicle_density,
         reason,
@@ -79,7 +79,7 @@ const CitizenCongestion = () => {
                 key={data.id}
                 areaName={data.chennai_areas?.name || 'Unknown'}
                 currentLevel={data.congestion_level}
-                predictedLevel={data.prediction_10min || data.congestion_level}
+                predictedLevel30min={data.prediction_30min || data.congestion_level}
                 currentSpeed={data.current_speed || undefined}
                 vehicleDensity={data.vehicle_density || undefined}
                 reason={data.reason || undefined}

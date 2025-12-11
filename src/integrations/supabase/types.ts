@@ -72,6 +72,10 @@ export type Database = {
           current_speed: number | null
           id: string
           prediction_10min: string | null
+          prediction_1hr: string | null
+          prediction_2hr: string | null
+          prediction_30min: string | null
+          prediction_3hr: string | null
           reason: string | null
           recorded_at: string | null
           vehicle_density: number | null
@@ -82,6 +86,10 @@ export type Database = {
           current_speed?: number | null
           id?: string
           prediction_10min?: string | null
+          prediction_1hr?: string | null
+          prediction_2hr?: string | null
+          prediction_30min?: string | null
+          prediction_3hr?: string | null
           reason?: string | null
           recorded_at?: string | null
           vehicle_density?: number | null
@@ -92,6 +100,10 @@ export type Database = {
           current_speed?: number | null
           id?: string
           prediction_10min?: string | null
+          prediction_1hr?: string | null
+          prediction_2hr?: string | null
+          prediction_30min?: string | null
+          prediction_3hr?: string | null
           reason?: string | null
           recorded_at?: string | null
           vehicle_density?: number | null
