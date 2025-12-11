@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -44,8 +44,8 @@ const ChatInterface = ({
   };
 
   return (
-    <div className={cn("flex flex-col h-full", className)}>
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+    <div className={cn("flex flex-col h-full overflow-hidden", className)}>
+      <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
         <div className="space-y-4">
           {messages.length === 0 && (
             <div className="text-center text-muted-foreground py-8">
@@ -94,7 +94,7 @@ const ChatInterface = ({
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
       <form onSubmit={handleSubmit} className="p-4 border-t">
         <div className="flex gap-2">
