@@ -126,41 +126,36 @@ const AuthorityHelper = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="font-display text-3xl font-bold mb-2">AI Decision Helper</h1>
-          <p className="text-muted-foreground">Get smart insights and recommendations for traffic management</p>
+      <div className="flex-1 flex overflow-hidden">
+        {/* Full Map */}
+        <div className="flex-1 relative">
+          <ChennaiMap 
+            markers={markers}
+            className="h-full w-full"
+          />
+          {/* Title overlay on map */}
+          <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
+            <h1 className="font-display text-lg font-bold">AI Decision Helper</h1>
+            <p className="text-xs text-muted-foreground">Live traffic overview</p>
+          </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6 h-[calc(100vh-240px)]">
-          {/* Map Preview */}
-          <Card className="overflow-hidden">
-            <CardHeader className="py-3">
-              <CardTitle className="text-sm">Live Traffic Overview</CardTitle>
-            </CardHeader>
-            <ChennaiMap 
-              markers={markers}
-              className="h-[calc(100%-52px)]"
-            />
-          </Card>
-
-          {/* AI Chat */}
-          <Card className="flex flex-col overflow-hidden">
-            <CardHeader className="py-3 border-b">
-              <CardTitle className="text-sm">AI Assistant</CardTitle>
-            </CardHeader>
-            <ChatInterface
-              messages={messages}
-              isLoading={isLoading}
-              onSendMessage={handleSendMessage}
-              placeholder="Ask for traffic insights, deployment suggestions..."
-              className="flex-1"
-            />
-          </Card>
-        </div>
-      </main>
+        {/* AI Chat Sidebar */}
+        <Card className="w-96 flex flex-col border-l rounded-none border-y-0 border-r-0">
+          <CardHeader className="py-3 border-b shrink-0">
+            <CardTitle className="text-sm">AI Assistant</CardTitle>
+          </CardHeader>
+          <ChatInterface
+            messages={messages}
+            isLoading={isLoading}
+            onSendMessage={handleSendMessage}
+            placeholder="Ask for traffic insights..."
+            className="flex-1 min-h-0"
+          />
+        </Card>
+      </div>
     </div>
   );
 };
