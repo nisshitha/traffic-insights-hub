@@ -5,7 +5,7 @@ import { MapPin, Gauge, TrendingUp, Car } from 'lucide-react';
 interface CongestionCardProps {
   areaName: string;
   currentLevel: 'low' | 'medium' | 'high';
-  predictedLevel: 'low' | 'medium' | 'high';
+  predictedLevel30min: 'low' | 'medium' | 'high';
   currentSpeed?: number;
   vehicleDensity?: number;
   reason?: string;
@@ -14,7 +14,7 @@ interface CongestionCardProps {
 const CongestionCard = ({
   areaName,
   currentLevel,
-  predictedLevel,
+  predictedLevel30min,
   currentSpeed,
   vehicleDensity,
   reason
@@ -37,8 +37,8 @@ const CongestionCard = ({
             <TrendingUp className="h-4 w-4" />
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted-foreground mb-1">10 min forecast</p>
-            <TrafficBadge level={predictedLevel} size="lg" />
+            <p className="text-xs text-muted-foreground mb-1">30 min forecast</p>
+            <TrafficBadge level={predictedLevel30min} size="lg" />
           </div>
         </div>
 

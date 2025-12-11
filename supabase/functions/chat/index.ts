@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,9 +15,53 @@ serve(async (req) => {
   try {
     const { messages, chatType } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Fetch current traffic data from database
+    let trafficContext = "";
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      
+      const { data: congestionData, error } = await supabase
+        .from('congestion_data')
+        .select(`
+          congestion_level,
+          prediction_30min,
+          prediction_1hr,
+          prediction_2hr,
+          prediction_3hr,
+          current_speed,
+          vehicle_density,
+          reason,
+          recorded_at,
+          chennai_areas (name, zone)
+        `)
+        .order('recorded_at', { ascending: false })
+        .limit(50);
+
+      if (!error && congestionData && congestionData.length > 0) {
+        // Get unique areas with latest data
+        const uniqueAreas = new Map();
+        congestionData.forEach((item: any) => {
+          const areaName = item.chennai_areas?.name;
+          if (areaName && !uniqueAreas.has(areaName)) {
+            uniqueAreas.set(areaName, item);
+          }
+        });
+
+        const trafficSummary = Array.from(uniqueAreas.values()).map((item: any) => {
+          return `- ${item.chennai_areas?.name} (${item.chennai_areas?.zone}): Current=${item.congestion_level}, 30min=${item.prediction_30min || 'N/A'}, 1hr=${item.prediction_1hr || 'N/A'}, 2hr=${item.prediction_2hr || 'N/A'}, 3hr=${item.prediction_3hr || 'N/A'}, Speed=${item.current_speed || 'N/A'}km/h, Density=${item.vehicle_density || 'N/A'}veh/km${item.reason ? ', Reason: ' + item.reason : ''}`;
+        }).join('\n');
+
+        trafficContext = `\n\n=== REAL-TIME TRAFFIC DATA ===\nLast updated: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}\n\n${trafficSummary}\n\n=== END TRAFFIC DATA ===\n\nUse this real-time data to answer questions about current conditions and predictions. For predictions beyond 3 hours, extrapolate based on patterns and typical Chennai traffic behavior.`;
+        
+        console.log(`Loaded traffic data for ${uniqueAreas.size} areas`);
+      }
     }
 
     // Define system prompts based on chat type
@@ -28,9 +73,16 @@ serve(async (req) => {
 - Weather impact on traffic
 - General traffic-related queries
 
-Always be concise, helpful, and provide actionable advice. Reference Chennai-specific locations like OMR, ECR, T. Nagar, Guindy, Anna Nagar, Velachery, etc.
+You have access to REAL-TIME traffic data including:
+- Current congestion levels (low/medium/high)
+- 30-minute, 1-hour, 2-hour, and 3-hour predictions
+- Current vehicle speeds and density
+- Reasons for congestion (if any)
 
-Current context: You have access to real-time traffic data for Chennai. Provide specific, practical advice based on typical Chennai traffic patterns.`,
+When users ask about future traffic (e.g., "how will traffic be in 3 hours"), use the prediction data to give accurate forecasts. Be specific with area names and prediction levels.
+
+Always be concise, helpful, and provide actionable advice. Reference Chennai-specific locations like OMR, ECR, T. Nagar, Guindy, Anna Nagar, Velachery, etc.
+${trafficContext}`,
 
       authority: `You are an AI decision support system for Chennai traffic authorities. You help with:
 - Traffic management decisions and deployment strategies
@@ -40,13 +92,18 @@ Current context: You have access to real-time traffic data for Chennai. Provide 
 - Emergency response planning
 - Data-driven insights for traffic control
 
-Provide detailed, actionable recommendations with specific locations and times. Be professional and thorough.
+You have access to REAL-TIME traffic data including:
+- Current congestion levels (low/medium/high)
+- 30-minute, 1-hour, 2-hour, and 3-hour predictions
+- Current vehicle speeds and density
+- Reasons for congestion (if any)
 
-Example insights you might provide:
-- "Heavy congestion predicted in OMR at 6:45 PM due to rainfall and increased vehicle density. Recommend deploying additional traffic personnel at Tidel Park junction."
-- "Signal timing optimization needed at Guindy industrial area during 8-10 AM to reduce bottleneck."
+When analyzing traffic or predicting future conditions, use this actual data. Provide specific insights like:
+- "Based on current data, OMR is at HIGH congestion (15 km/h) and predicted to remain HIGH for the next 2 hours"
+- "Recommend deploying personnel at Tidel Park junction - prediction shows worsening from medium to high in 30 mins"
 
-Always consider Chennai's specific geography, peak hours (8-10 AM, 5-8 PM), IT corridors (OMR, Guindy), and commercial zones (T. Nagar, Anna Nagar).`
+Consider Chennai's specific geography, peak hours (8-10 AM, 5-8 PM), IT corridors (OMR, Guindy), and commercial zones (T. Nagar, Anna Nagar).
+${trafficContext}`
     };
 
     const systemPrompt = systemPrompts[chatType] || systemPrompts.citizen;
