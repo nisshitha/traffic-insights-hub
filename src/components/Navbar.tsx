@@ -1,45 +1,46 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { LogOut, Menu, X, MapPin, Route, MessageSquare, BarChart3, Brain } from 'lucide-react';
+import { Menu, X, MapPin, Route, MessageSquare, BarChart3, Brain, Shield, Calculator, Activity } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
-const Navbar = () => {
-  const { user, role, signOut } = useAuth();
+interface NavbarProps {
+  role: 'citizen' | 'authority';
+}
+
+const Navbar = ({ role }: NavbarProps) => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const citizenLinks = [
     { href: '/citizen/congestion', label: 'Congestion', icon: MapPin },
     { href: '/citizen/route', label: 'Route', icon: Route },
+    { href: '/citizen/stability', label: 'Stability', icon: Activity },
     { href: '/citizen/assistant', label: 'AI Assistant', icon: MessageSquare },
   ];
 
   const authorityLinks = [
     { href: '/authority/map', label: 'Live Map', icon: MapPin },
     { href: '/authority/analytics', label: 'Analytics', icon: BarChart3 },
+    { href: '/authority/cost-calculator', label: 'Cost Calculator', icon: Calculator },
     { href: '/authority/helper', label: 'AI Helper', icon: Brain },
   ];
 
   const links = role === 'authority' ? authorityLinks : citizenLinks;
-  const themeColor = role === 'authority' ? 'accent' : 'primary';
-
-  if (!user) return null;
 
   return (
     <nav className="bg-card border-b sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to={role === 'authority' ? '/authority/map' : '/citizen/congestion'} className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className={cn(
               "h-8 w-8 rounded-lg flex items-center justify-center",
               role === 'authority' ? 'gradient-authority' : 'gradient-citizen'
             )}>
               <MapPin className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-lg">Chennai Traffic</span>
+            <span className="font-display font-bold text-lg">UMIS</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -60,10 +61,10 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* User Menu */}
+          {/* Role Badge */}
           <div className="hidden md:flex items-center gap-4">
             <div className="text-sm">
-              <span className="text-muted-foreground">Signed in as </span>
+              <span className="text-muted-foreground">Mode: </span>
               <span className={cn(
                 "font-medium capitalize",
                 role === 'authority' ? 'text-accent' : 'text-primary'
@@ -71,10 +72,11 @@ const Navbar = () => {
                 {role}
               </span>
             </div>
-            <Button variant="outline" size="sm" onClick={signOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+            <Link to="/">
+              <Button variant="outline" size="sm">
+                Switch Role
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -107,10 +109,12 @@ const Navbar = () => {
                   </Button>
                 </Link>
               ))}
-              <Button variant="outline" className="w-full justify-start" onClick={signOut}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
+              <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full justify-start">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Switch Role
+                </Button>
+              </Link>
             </div>
           </div>
         )}
