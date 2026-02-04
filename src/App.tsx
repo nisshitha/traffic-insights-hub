@@ -3,127 +3,73 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { useState, createContext, useContext } from "react";
 
 // Pages
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 // Citizen Pages
 import CitizenCongestion from "./pages/citizen/Congestion";
 import CitizenRoute from "./pages/citizen/RouteRecommendation";
 import CitizenAssistant from "./pages/citizen/Assistant";
+import CitizenStability from "./pages/citizen/Stability";
 
 // Authority Pages
 import AuthorityMap from "./pages/authority/Map";
 import AuthorityAnalytics from "./pages/authority/Analytics";
 import AuthorityHelper from "./pages/authority/Helper";
+import AuthorityCostCalculator from "./pages/authority/CostCalculator";
 
 const queryClient = new QueryClient();
 
-// Protected Route Component
-const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode; allowedRole?: 'citizen' | 'authority' }) => {
-  const { user, role, loading } = useAuth();
+// Simple role context for demo navigation
+interface AppContextType {
+  userRole: 'citizen' | 'authority' | null;
+  setUserRole: (role: 'citizen' | 'authority' | null) => void;
+}
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+export const AppContext = createContext<AppContextType>({
+  userRole: null,
+  setUserRole: () => {}
+});
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+export const useAppContext = () => useContext(AppContext);
 
-  if (allowedRole && role !== allowedRole) {
-    // Redirect to their correct dashboard
-    return <Navigate to={role === 'authority' ? '/authority/map' : '/citizen/congestion'} replace />;
-  }
+const App = () => {
+  const [userRole, setUserRole] = useState<'citizen' | 'authority' | null>(null);
 
-  return <>{children}</>;
-};
-
-// Auth Redirect Component
-const AuthRedirect = () => {
-  const { user, role, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (user && role) {
-    return <Navigate to={role === 'authority' ? '/authority/map' : '/citizen/congestion'} replace />;
-  }
-
-  return <Auth />;
-};
-
-const AppRoutes = () => {
   return (
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<Index />} />
-      <Route path="/auth" element={<AuthRedirect />} />
+    <AppContext.Provider value={{ userRole, setUserRole }}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Index />} />
 
-      {/* Citizen Routes */}
-      <Route path="/citizen/congestion" element={
-        <ProtectedRoute allowedRole="citizen">
-          <CitizenCongestion />
-        </ProtectedRoute>
-      } />
-      <Route path="/citizen/route" element={
-        <ProtectedRoute allowedRole="citizen">
-          <CitizenRoute />
-        </ProtectedRoute>
-      } />
-      <Route path="/citizen/assistant" element={
-        <ProtectedRoute allowedRole="citizen">
-          <CitizenAssistant />
-        </ProtectedRoute>
-      } />
+              {/* Citizen Routes */}
+              <Route path="/citizen/congestion" element={<CitizenCongestion />} />
+              <Route path="/citizen/route" element={<CitizenRoute />} />
+              <Route path="/citizen/assistant" element={<CitizenAssistant />} />
+              <Route path="/citizen/stability" element={<CitizenStability />} />
 
-      {/* Authority Routes */}
-      <Route path="/authority/map" element={
-        <ProtectedRoute allowedRole="authority">
-          <AuthorityMap />
-        </ProtectedRoute>
-      } />
-      <Route path="/authority/analytics" element={
-        <ProtectedRoute allowedRole="authority">
-          <AuthorityAnalytics />
-        </ProtectedRoute>
-      } />
-      <Route path="/authority/helper" element={
-        <ProtectedRoute allowedRole="authority">
-          <AuthorityHelper />
-        </ProtectedRoute>
-      } />
+              {/* Authority Routes */}
+              <Route path="/authority/map" element={<AuthorityMap />} />
+              <Route path="/authority/analytics" element={<AuthorityAnalytics />} />
+              <Route path="/authority/helper" element={<AuthorityHelper />} />
+              <Route path="/authority/cost-calculator" element={<AuthorityCostCalculator />} />
 
-      {/* Catch-all */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+              {/* Catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </AppContext.Provider>
   );
 };
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
 
 export default App;
